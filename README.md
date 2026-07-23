@@ -44,7 +44,12 @@ Everything shares one cyberpunk dark-teal palette:
 ```
 
 `wallpaper.png` and `avatar.png` are optional. If they are not found next to the
-script, the run continues and simply skips the wallpaper/avatar steps.
+script, the run continues and simply skips the wallpaper/avatar steps.  
+
+EDIT:
+  Apparently the script fails to change the theme when no wallpaper is provided.
+  Also the wallpaper needs to be set manually. The script will import it into the "Desktop"-options, but to change the wallpaper you will need to swap from the desired one to a different one and back.
+  Sorry about that, but so far i was too lazy to fix it
 
 ---
 
