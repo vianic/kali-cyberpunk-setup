@@ -61,7 +61,16 @@ USER_BUS_SOCK="/run/user/${TARGET_UID}/bus"
 # fixed /tmp path we write to as root. Removed automatically on exit.
 WORKDIR="$(mktemp -d "${TMPDIR:-/tmp}/kali-ui-setup.XXXXXX")"
 chmod 700 "${WORKDIR}"
-cleanup() { rm -rf "${WORKDIR}"; }
+
+# Some build steps must run AS THE TARGET USER (e.g. ble.sh, so the resulting
+# files aren't root-owned). Those can't write into the 0700 root-owned dir
+# above, so they get their own scratch dir owned by that user -- still 0700, so
+# it stays private to them.
+USER_WORKDIR="$(mktemp -d "${TMPDIR:-/tmp}/kali-ui-setup-user.XXXXXX")"
+chown "${TARGET_USER}:${TARGET_USER}" "${USER_WORKDIR}"
+chmod 700 "${USER_WORKDIR}"
+
+cleanup() { rm -rf "${WORKDIR}" "${USER_WORKDIR}"; }
 trap cleanup EXIT
 
 # ─── as_user: run a command as TARGET_USER against their REAL, already-running
@@ -242,11 +251,11 @@ BLESH_DIR="${TARGET_HOME}/.local/share/blesh"
 if [[ ! -d "${BLESH_DIR}" ]]; then
     info "Cloning ble.sh..."
     sudo -u "${TARGET_USER}" git clone --depth=1 \
-        https://github.com/akinomyoga/ble.sh.git ${WORKDIR}/blesh-src
-    pushd ${WORKDIR}/blesh-src > /dev/null
+        https://github.com/akinomyoga/ble.sh.git ${USER_WORKDIR}/blesh-src
+    pushd ${USER_WORKDIR}/blesh-src > /dev/null
     sudo -u "${TARGET_USER}" make install PREFIX="${TARGET_HOME}/.local" 2>/dev/null
     popd > /dev/null
-    rm -rf ${WORKDIR}/blesh-src
+    rm -rf ${USER_WORKDIR}/blesh-src
     success "ble.sh installed to ${BLESH_DIR}"
 else
     info "ble.sh already present — skipping"
