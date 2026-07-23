@@ -44,5 +44,8 @@ Initial public release.
   predictable `/tmp` paths; installer logs go to a private per-user directory.
 - `GIT_TERMINAL_PROMPT=0` so a wrong/private repo URL fails fast instead of
   hanging on a credential prompt.
+- Build steps that must run as the target user (ble.sh) use a separate
+  user-owned 0700 scratch directory, so they aren't blocked by the root-owned
+  one while both stay private.
 
 [1.0.0]: https://example.com/your-repo/releases/tag/v1.0.0
